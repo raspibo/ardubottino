@@ -42,7 +42,7 @@ bool automat = false;
 bool program = false;
 
 //Speed
-int motor1PWM = 72;
+int motor1PWM = 59;
 int motor2PWM = 80;
 bool turbo = false;
 
@@ -61,7 +61,7 @@ unsigned int moves[50][2];
 unsigned int pointer = 0;
 
 //Debug
-bool debug = false;
+bool debug = true;
 
 void setup() {
   pinMode(m1fd,OUTPUT);
@@ -318,32 +318,39 @@ void loop() {
   }
   if (automat) {
     if (digitalRead(fall)) {
-      backward();
-      delay(2000);
-      left();
-      delay(steer*2);
+      //backward();
+      //delay(2000);
+      //left();
+      //delay(steer*2);
+      avoid('b',3);
+      avoid('l',5);
       forward();
     }
   }
   if (automat && echo() < tooclose) { //automatic mode
     analogWrite(en1,PWM_MinMaxCheck(motor1PWM +100));
     analogWrite(en2,PWM_MinMaxCheck(motor2PWM +100));
-    right();
-    delay(steer);
+    //right();
+    //delay(steer);
+    avoid('r',4);
     distrt = echo();
-    left();
-    delay(steer*2);
+    //left();
+    //delay(steer*2);
+    avoid('l',8);
     distlt = echo();
     noMotion();
     if (distrt < tooclose && distlt < tooclose) {
-      left();
-      delay(steer*2);
+      //left();
+      //delay(steer*2);
+      avoid('l',4);
     } else if (distrt < distlt) {
-      left();
-      delay(steeravoid);
+      //left();
+      //delay(steeravoid);
+      avoid('l',2);
     } else {
-      right();
-      delay(steer*2+steeravoid);
+      //right();
+      //delay(steer*2+steeravoid);
+      avoid('r',8);
     }
     analogWrite(en1,motor1PWM);
     analogWrite(en2,motor2PWM);
@@ -379,24 +386,29 @@ int PWM_MinMaxCheck(int pwm) {
 
 void executeProgram() {
   int right_count_program = right_count;
-  int left_count_program = left_count;
   for (int x=0;x<=49;x++){
     if (moves[x][1] == 0) {
+      if(debug){Serial.println("STOP");}
       break;
     } else if (moves[x][1] == 1){
+      if(debug){Serial.println("Forward");}
       forward();
     } else if (moves[x][1] == 2){
+      if(debug){Serial.println("Backward");}
       backward();
     } else if (moves[x][1] == 3){
+      if(debug){Serial.println("Left");}
       left();
     } else if (moves[x][1] == 4){
+      if(debug){Serial.println("Right");}
       right();
     }
     while(moves[x][0] > 0) {
-      if (right_count_program != right_count && left_count_program != left_count) {
+      if (right_count_program != right_count ) {
+        if(debug){Serial.println(moves[x][0]);}
         moves[x][0] --;
         right_count_program = right_count;
-        left_count_program = left_count;
+        
       }
       if (digitalRead(fall)) {      
         noMotion();
@@ -513,3 +525,25 @@ void left_encoder() {
   }
 }
 
+void avoid(char movement, int steps) {
+  int last_count = right_count;
+  steps = steps + last_count;
+  if(movement == 'b'){
+    backward();
+  } else if (movement == 'l') {
+    left();
+  } else if (movement == 'r') {
+    right();
+  }
+  while(right_count < steps) {
+    if(debug){
+      Serial.print("Moving ");
+      Serial.print(movement);
+      Serial.print(" step ");
+      Serial.print(right_count);
+      Serial.print(" of ");
+      Serial.println(steps);
+    }
+  }
+  return;
+}
