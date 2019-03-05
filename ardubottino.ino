@@ -505,10 +505,10 @@ void blinkNO() {
 
 void right_encoder() {
   static unsigned long last_interrupt = 0;
-  unsigned long time_interrupt = millis();
-  if(time_interrupt - last_interrupt >70){
+  unsigned long time_interrupt = micros();
+  if(time_interrupt - last_interrupt >5000){
     right_interval = time_interrupt - last_interrupt;
-    next_check_right = millis()+right_interval*2;
+    next_check_right = micros()+right_interval*2;
     right_count +=1;
     last_interrupt = time_interrupt;
   }
@@ -516,12 +516,12 @@ void right_encoder() {
 
 void left_encoder() {
   static unsigned long last_interrupt = 0;
-  unsigned long time_interrupt = millis();
-  if(time_interrupt - last_interrupt >70) {
-    left_interval = millis() - last_interrupt;
-    next_check_left = millis()+left_interval*2;
+  unsigned long time_interrupt = micros();
+  if(time_interrupt - last_interrupt >5000) {
+    left_interval = time_interrupt - last_interrupt;
+    next_check_left = micros()+left_interval*2;
     left_count +=1;
-    last_interrupt = millis();
+    last_interrupt = time_interrupt;
   }
 }
 
